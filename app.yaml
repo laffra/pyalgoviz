@@ -1,0 +1,87 @@
+application: pyalgoviz
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /icon-home.png
+  static_files: static/images/icon-home.png
+  upload: static/images/icon-home.png
+
+- url: /favicon.ico
+  static_files: favicon.ico
+  upload: favicon.ico
+
+- url: /how.png
+  static_files: static/images/how.png
+  upload: static/images/how.png
+
+- url: /amsterdam.png
+  static_files: static/images/amsterdam.png
+  upload: static/images/amsterdam.png
+
+- url: /CLRS.jpeg
+  static_files: static/images/CLRS.jpeg
+  upload: static/images/CLRS.jpeg
+
+- url: /Skiena.jpg
+  static_files: static/images/Skiena.jpg
+  upload: static/images/Skiena.jpg
+
+- url: /Wirth.jpg
+  static_files: static/images/Wirth.jpg
+  upload: static/images/Wirth.jpg
+
+- url: /sedgewick.png
+  static_files: static/images/sedgewick.png
+  upload: static/images/sedgewick.png
+
+- url: /privacy.html
+  static_files: static/html/privacy.html
+  upload: static/html/privacy.html
+
+- url: /pyalgoviz.js
+  static_files: static/js/pyalgoviz.js
+  upload: static/js/pyalgoviz.js
+
+- url: /3rd.js
+  static_files: static/js/3rd.js
+  upload: static/js/3rd.js
+
+- url: /responsive-elements.js
+  static_files: static/js/responsive-elements.js
+  upload: static/js/responsive-elements.js
+
+- url: /user
+  script: main.application
+  login: required
+
+- url: /save
+  script: main.application
+  login: required
+
+- url: /delete
+  script: main.application
+  login: required
+
+- url: /share
+  script: main.application
+  login: required
+
+- url: /show
+  script: main.application
+
+- url: /run
+  script: main.application
+  login: required
+
+- url: /.*
+  script: main.application
+
+
+libraries:
+- name: webapp2
+  version: latest
+- name: jinja2
+  version: latest

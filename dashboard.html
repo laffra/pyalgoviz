@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <style>
+            .edit { 
+                float: left;
+                font-family: Arial;
+                color: white;
+                padding: 10px;
+                margin-right: 15px;
+                margin-bottom: 15px;
+                cursor: pointer;
+                border: 5px solid teal;
+                text-shadow: 1px 1px black;
+            }
+            .hours {
+                background: #003C00;
+            }
+            .minutes {
+                background: #467146;
+            }
+            .seconds {
+                background: #ADC0AD;
+            }
+            .edit:hover { 
+                border: 5px solid orange;
+            }
+            .name { 
+                font-family: Arial;
+            }
+            td {
+                border-bottom: 3px solid #AAA;
+                padding-top: 15px;
+            }
+        </style>
+        <title>OSCON Tutorial - Dashboard</title>
+        <script>
+        setTimeout(function() { document.location.reload(); }, 5000);
+        </script>
+    </head>
+    <body>
+        <table>
+        {% for name, edit in edits %}
+            <tr>
+                <td>
+                    <div class=name>{{name}}&nbsp;</div><br>
+                </td>
+                <td>
+                    {% for date, time, recency, author, email, url in edit %}
+                    <a href="{{url}}" target='_blank'>
+                        <div class="edit {{recency}}">
+                            <div class=time>{{time}} {{author}}</div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    </body>
+</html>

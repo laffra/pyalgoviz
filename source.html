@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <style> {% include "3rd.css" %} </style>
+        <style> {% include "pyalgoviz.css" %} </style>
+        <title>PyAlgoViz - {{name}}</title>
+    </head>
+    <body>
+
+        <div id="name" class="hidden">{{name}}</div>
+        
+        {% for name,cls in files %}
+        <a class="{{cls}}" href="/source?name={{name}}">{{name}}</a>
+        {% endfor %}
+
+        <button onclick="doUpdate()" id="saveButton" class="button hidden">Save</button>
+
+        <div class="sourceEditor">
+            <textarea id="source" name="source">{{source}}</textarea>
+        </div>
+        <script>
+            function initPyAlgoViz() { 
+                var name = "{{name}}";
+                var mode = 
+                    /\.py$/.test(name) ? "python" : 
+                    /\.html$/.test(name) ? "xml" : 
+                    /\.js$/.test(name) ? "javascript" : 
+                    /\.css$/.test(name) ? "css" : 
+                    "null";
+                sourceEditor.setOption("mode", mode);
+            }
+            setTimeout(function() {
+                var element = document.createElement("script");
+                element.setAttribute("type","text/javascript")
+                element.setAttribute("src", "3rd.js")
+                document.body.appendChild(element);
+            }, 100)
+        </script>
+    </body>
+</html>
+

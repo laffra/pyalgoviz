@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <style> {% include "3rd.css" %} </style>
+    <style> {% include "pyalgoviz.css" %} </style>
+    <title>PyAlgoViz - {{name}}</title>
+</head>
+<body>
+    <div class='contents' data-respond>
+    <table><tr>
+
+      <td class='block'>
+        <a href='/'><img class=home src=icon-home.png></a>
+        <input id='name' onkeyup="doNameChange()" class='nameField' value='{{name}}'>
+        <button onclick="doSave()" id="saveButton" class="button moveup hidden">Save</button>
+        <button onclick="doShare()" id="shareButton" class="button moveup">Share</button>
+        &nbsp;&nbsp;
+        <span class="title moveup">vim:</span>
+        <input onchange="doToggleVimMode()" type="checkbox" name="vim" checked="checked" />
+        <button onclick="doDelete()" id="deleteButton" class="button moveup">Delete</button>
+        <a href={{logout}} class="logout moveup">logout</a>
+        <div class="script">
+        <textarea id="script" name="script">{{script}}</textarea>
+        </div>
+      </td>
+
+      <td class='block'>
+        <table style="margin: 3px 0 0 3px"><tr><td>
+          <button onclick="doRunScript()" id="runButton" class='button'>Run</button>
+        </td><td>
+          <button onclick="doPreviousStep()" id="previousButton" class='button'>&lt;</button>
+        </td><td>
+          <select id="speed" class="speed">
+          <option>Fast</option>
+          <option selected>Medium</option>
+          <option>Slow</option>
+          <option>Snail</option>
+          <option>Molasses</option>
+          </select>
+        </td><td>
+          <div id="slider" class='slider'></div>
+        </td><td>
+          <div id="progress" class="progress moveup">Loading...</div>
+        </td><td>
+          <button onclick="doNextStep()" id="nextButton" class='button'>&gt;</button>
+        </td><td>
+          <button onclick="doStop()" id="stopButton" class='button'>Play</button>
+        </td></tr><tr><td colspan=7>
+          <div id="rendering" class="rendering"></div>
+        </td></tr></table>
+      </td></tr>
+      
+      <tr><td class='block'>
+        <table style="margin: 3px 0 0 3px"><tr><td>
+	    <span class="title moveup">Show Visualization Errors:</span>
+	    <input onchange="doToggleShowErrors()" type="checkbox" name="showErrors"/>
+        </td><td>
+	    <div class="spacer">&nbsp;</div>
+        </td><td>
+	    <button onclick="doVizHelp()" id="helpVizButton" class="button">Help</button>
+        </td></tr><tr><td colspan=7>
+            <textarea id="visualization">{{viz}}</textarea>
+        </td></tr></table>
+      </td>
+      
+      <td class='block'>
+        <div class="output-panel">
+        <table style="margin: 3px 0 0 3px"><tr><td>
+          <div class="title output">Output:</div>
+        </td><td>
+          {% include "social.html" %}
+        </td></tr><tr><td colspan=7>
+          <textarea id="output"></textarea>
+        </td></tr></table>
+        </div>
+      </td>
+      </tr>
+    </table>
+
+
+    <div class='block wide'>
+        <div class='blockHeader indent'>
+            <h3>Comments and Feedback</h3>
+        </div>
+        <div class='clear blockContent indent grow'>
+            {% include "comments.html" %}
+        </div>
+    </div>
+
+    <a href="https://plus.google.com/+PyalgovizAppspotPlusPage/posts">+</a>
+    </div>
+
+    {% include "3rd.html" %}
+
+</body>
+</html>
+

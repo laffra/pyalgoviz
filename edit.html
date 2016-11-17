@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <style> {% include "3rd.css" %} </style>
+    <style> {% include "pyalgoviz.css" %} </style>
+    <title>PyAlgoViz - {{name}}</title>
+</head>
+<body>
+    <div class='contents' data-respond>
+    <table id="grid"><tr>
+
+      <td id="td1" class='block'>
+        <div id="tab1">
+            <div class=tab_header>
+                {% if share %}
+                <a href='/'><img class=home src=icon-home.png></a>
+                {% endif %}
+                {% if share %}
+                    <input id='name' onkeyup="doNameChange()" class='nameField' value='{{name}}'>
+                {% else %}
+                    <span id='name' style="margin-left:12px; width:250px">{{name}}</span>
+                    <button onclick="doSave()" id="saveButton" class="button moveup hidden">Save</button>
+                {% endif %}
+                {% if share %}
+                    <button onclick="doShare()" id="shareButton" class="button moveup">Share</button>
+                {% endif %}
+                &nbsp;&nbsp;
+                <span class="title moveup">vim:</span>
+                <input onchange="doToggleVimMode()" type="checkbox" name="vim"/>
+                {% if share %}
+                    <button onclick="doDelete()" id="deleteButton" class="button moveup">Delete</button>
+                    <a href={{logout}} class="logout moveup">logout</a>
+                {% endif %}
+                <a href="javascript:load_tabs()" class="logout moveup">tabs</a>
+            </div>
+            <div class="script">
+                <textarea id="script" name="script">{{script}}</textarea>
+            </div>
+        </div>
+      </td>
+
+      {{nextrow}}
+
+      <td id="td2" class='block'>
+        <div id="tab3">
+            <table style="margin: 3px 0 0 3px"><tr><td>
+              <button onclick="doRunScript()" id="runButton" class='button'>Run</button>
+            </td><td>
+              <button onclick="doPreviousStep()" id="previousButton" class='button'>&lt;</button>
+            </td><td>
+              <select id="speed" class="speed">
+              <option>Fast</option>
+              <option selected>Medium</option>
+              <option>Slow</option>
+              <option>Snail</option>
+              <option>Molasses</option>
+              </select>
+            </td><td>
+              <div id="slider" class='slider'></div>
+            </td><td>
+              <div id="progress" class="progress moveup">Loading...</div>
+            </td><td>
+              <button onclick="doNextStep()" id="nextButton" class='button'>&gt;</button>
+            </td><td>
+              <button onclick="doStop()" id="stopButton" class='button'>Play</button>
+            </td></tr><tr><td colspan=7>
+              <div id="rendering" class="rendering"></div>
+            </td></tr></table>
+        </div>
+      </td></tr>
+      
+      <tr><td id="td3" class='block'>
+        <div id="tab2">
+            <table style="margin: 3px 0 0 3px"><tr class=tab_header><td>
+            <span class="title moveup">Show Visualization Errors:</span>
+            <input onchange="doToggleShowErrors()" type="checkbox" name="showErrors"/>
+            </td><td>
+            {% if share %}
+              <span class="title">Author: {{author}}</span>
+            {% endif %}
+            </td><td>
+            <button onclick="doVizHelp()" id="helpVizButton" class="button">Help</button>
+            </td></tr><tr><td colspan=7>
+                <textarea id="visualization">{{viz}}</textarea>
+            </td></tr></table>
+          </div>
+      </td>
+
+      {{nextrow}}
+      
+      <td id="td4" class='block'>
+        <div id="tab4" class="output-panel">
+            <table style="margin: 3px 0 0 3px"><tr class=tab_header><td>
+              <div class="title output">Output:</div>
+            </td><td>
+              {% if share %}
+                  {% include "social.html" %}
+              {% endif %}
+            </td></tr><tr><td colspan=7>
+              <textarea id="output"></textarea>
+            </td></tr></table>
+        </div>
+      </td>
+      </tr>
+    </table>
+
+
+    {% if share %}
+    <div class='block wide'>
+        <div class='blockHeader indent'>
+            <h3>Comments and Feedback</h3>
+        </div>
+        <div class='clear blockContent indent grow'>
+            {% include "comments.html" %}
+        </div>
+    </div>
+    <a href="https://plus.google.com/+PyalgovizAppspotPlusPage/posts">+</a>
+    {% endif %}
+    </div>
+
+    <script>
+        RENDERING_SCALE = 1.0;
+
+        function load_tabs(e) { 
+            var contents = $('.contents');
+            $('<ul class="tabs"><li><a href="#tab1">Algorithm</a></li><li><a href="#tab2">Script</a></li>' + 
+                '<li><a href="#tab3">Visualization</a></li><li><a href="#tab4">Output</a></li></ul>').appendTo(contents);
+
+            var container = $('<div>').addClass("tab_container").appendTo(contents);
+            $('#tab1').addClass('tab_content').addClass('active').appendTo(container);
+            $('#tab2').addClass('tab_content').appendTo(container);
+            $('#tab3').addClass('tab_content').appendTo(container);
+            $('#tab4').addClass('tab_content').removeClass('output-panel').appendTo(container);
+
+            $('#grid').hide();
+            $('.tab_header').css('display', 'none');
+
+            $(".tab_content").hide(); 
+            $("ul.tabs li:first").addClass("active").show(); 
+            $(".tab_content:first").show(); 
+            $('#rendering').empty();
+            resetEditor(scriptEditor);
+            resetEditor(vizEditor);
+
+            $('<a>')
+                .appendTo($('body'))
+                .addClass('load_grid')
+                .click(load_grid)
+                .css('text-decoration', 'underline')
+                .css('cursor', 'pointer')
+                .css('color', 'blue')
+                .css('position', 'absolute')
+                .css('top', '10px')
+                .css('left', '600px')
+                .text('grid')
+             
+            $("ul.tabs li").click(function() {
+                $("ul.tabs li").removeClass("active"); 
+                $(this).addClass("active"); 
+                $(".tab_content").hide(); 
+                var activeTab = $(this).find("a").attr("href"); 
+                $(activeTab).fadeIn(); 
+                resetEditor(scriptEditor);
+                resetEditor(vizEditor);
+                return false;
+            });
+
+            $('.CodeMirror').css('width', '1200px').css('height', '800px');
+
+            $('head').append('<style>' +
+                '.CodeMirror pre { font-size: 25px; } ' +
+                '.CodeMirror-linenumber { font-size: 25px; } ' +
+                '.rendering { width:1180px; height:800px; margin: 3px 0 0 0; } ' +
+                '.speed { width: 125px; font-size: 110%; margin: 10px 7px 0px 1px; }' +
+                '.slider { width: 145px; font-size: 100%; margin: 17px 5px 0px 0px; }' +
+                '.progress {font-size: 100%; width:200px; margin: 19px 5px 0px 0px; }' +
+                '.vizhead { padding:5px 0 0 10px; background: white; font-size: 22px; }' +
+                '.viz { padding:3px; padding-top:0; background: white }' +
+                '.tab_content { padding: 5px 20px 10px 20px; }' +
+            '</style>');
+
+            RENDERING_SCALE = 1.8;
+            EDITOR_WIDTH = 1180;
+            EDITOR_HEIGHT = 900;
+
+        }
+
+        function load_grid(e) { 
+            $('.CodeMirror').css('width', '{{editor_width}}').css('height', '{{editor_height}}px');
+
+            $('#tab1').show().removeClass('tab_content').appendTo($('#td1'));
+            $('#tab3').show().removeClass('tab_content').appendTo($('#td2'));
+            $('#tab2').show().removeClass('tab_content').appendTo($('#td3'));
+            $('#tab4').show().removeClass('tab_content').appendTo($('#td4')).addClass('output-panel');
+
+            $('#grid').show();
+            $('.tab_header').show();
+            $(".tab_content").remove(); 
+            $('.tabs').remove();
+            $('.load_grid').remove();
+            $('.rendering_canvas').remove();
+            $('#rendering').empty();
+ 
+            resetEditor(scriptEditor);
+            resetEditor(vizEditor);
+             
+            $('head').append('<style>' +
+                '.CodeMirror pre { font-size: 14px; } ' +
+                '.CodeMirror-linenumber { font-size: 14px; } ' +
+                '.rendering { width:{{editor_width}}px; height:{{editor_height}}px; margin: -8px 0 0 0; } ' +
+                '.speed { width: 85px; font-size: 82%; margin: 0px 7px 0px 1px; }' +
+                '.slider { width: 105px; font-size: 50%; margin: 7px 7px 0px 1px; }' +
+                '.progress {font-size: 70%; width:140px; margin: 10px; }' +
+                '.vizhead { padding:5px 0 0 10px; background: white; font-size: 22px; }' +
+                '.viz { padding:3px; padding-top:0; background: white }' +
+            '</style>');
+
+            RENDERING_SCALE = 1.0;
+            EDITOR_WIDTH = {{editor_width}};
+            EDITOR_HEIGHT = {{editor_height}};
+        }
+
+        function resetEditor(editor) {
+            // force editor to recompute line heights to correctly position the cursor
+            var text = editor.getValue();
+            editor.setValue(text + ' ');
+            setTimeout(function() { editor.setValue(text); }, 1);
+        }
+    </script>
+
+    {% include "3rd.html" %}
+
+</body>
+</html>
+

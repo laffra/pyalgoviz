@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name=”mobile-web-app-capable” content=”yes”>
+        <meta name="description" content="Repository of Computer Science algorithms, written in Python, with visualizations written in Python as well. The animations run in the browser, and algorithms can be developed, saved, and shared from the browser. Example animations are: Dynamic Programming: Knapsack, Geometry - Pi Archimedes, Graphs - Dijkstra Shortest Path, Numbers - Fibonacci / Golden Ratio, Fibonacci Series Generator, Prime Number Generator, Searching - BFS - Breath First Search, Searching - Binary Search, DFS - Depth First Search, Searching - Linear Search, Sorting - Bogo Sort, Sorting - BubbleSort, Sorting - Cocktail Sort, Sorting - Comb Sort, Sorting - Gnome Sort, Sorting - Heap Sort, Unordered List of Tasks Temporary Binary Min-Heap Sorting - Insertion Sort, Sorting - MergeSort, Sorting - NegPos Sort, Sorting - Odd-Even Sort, Sorting - QuickSort, Sorting - QuickSort Sedgewick, Sorting - QuickSort Stackless, Sorting - ShellSort, Sorting - TimSort, Sorting - TreeSort, Sorting - Using Custom Keys, Strings - Anagram Check, Strings - Palindrome Check, Strings - Permutations, Strings - Prefix/Spell Tree, Strings - Spell/Correct, Trees - AVL, Trees - BST Creation, Trees - BST Merging, Trees - Diameter, Trees - Move To Root, Trees - Prefix/Radix/Trie, Trigonometry - Sin/Cos/Tan, This app was created by Chris Laffra.  Technologies used: Google App Engine, Python 2.7, Python NBD DataStore, Jinja2 Templates, HTML/JavaScript/CSS, CodeMirror, jQuery, D3.js, and Wikipedia."></meta>
+        <style>{% include "pyalgoviz.css" %}</style>
+        <style>{% include "3rd.css" %}</style>
+        <title>PyAlgoViz - Home</title>
+    </head>
+    <body>
+        <div class='contents'>
+            <div class='block floating wide'>
+                    <h3 class='left'>
+                        &nbsp;&nbsp;
+			PyAlgoViz: Python Algorithm Visualizations done in Python running in the browser.
+                    </h3>
+                    <div class="link right">
+                        <a href="https://plus.google.com/109468193166819923528" rel="publisher">
+                            Google+
+                        </a>
+                        &nbsp;
+                        {% if user %}
+                            <a href="/user">My Algorithms</a>
+                        {% else %}
+                            <a href="/">Public Algorithms</a>
+                        {% endif %}
+                    </div>
+            </div>
+
+            <div id="marker" class="triangle-border">
+                Click for details...
+            </div>
+
+            {% for name, author, userid, events, id, extra in algorithms %}
+            <div class='block floating narrow small'>
+                <div class='blockHeader indent'>
+                    <span class="name">{{name}}</span>
+                    <div class=author>{{author}}</div>
+                </div>
+                <div class='clear blockContent tall'>
+                    <div class='blockPreview' onmouseover="preview({{id}})" 
+                                    onmousedown="show('{{name}}')" id="preview{{id}}">
+                        <span class=nopreview>loading...<span>
+                    </div>
+                </div>
+                <div class='public'>{{extra}}</div>
+            </div>
+            {% endfor %}
+
+            <div class='clear'></div>
+
+            <div class='block wide'>
+                <div class='blockHeader indent'>
+                    <h3>Contributing and Sharing</h3>
+                </div>
+                <div class='clear blockContent indent short'>
+                    Seeing an algorithm explained in simple visual terms is rewarding and cool. 
+                    Adding your own algorithm is simple. 
+                    <p>
+                    First <a href="/show?">create your own algorithm</a>. You can share it later.
+                    {% include "social.html" %}
+                </div>
+            </div>
+
+            <div class='block wide'>
+                <div class='blockHeader indent'>
+                    <h3>Implementation Details</h3>
+                </div>
+                <div class='clear blockContent indent short'>
+                    This app was created by 
+                    <a  href=//chrislaffra.com>Chris Laffra</a>. The project only represents my personal
+                    views and opinions and not necessarily those of my employer.
+                    <p>
+                    Technologies used:
+                    <a href=//developers.google.com/appengine/>Google App Engine</a>,
+                    <a href=//python.org/>Python 2.7</a>,
+                    <a href=//developers.google.com/appengine/docs/python/ndb/>Python NBD DataStore</a>,
+                    <a href=//developers.google.com/appengine/docs/python/gettingstartedpython27/templates>
+                                        Jinja2 Templates</a>,
+                    <a href=//www.w3schools.com/>HTML/JavaScript/CSS</a>,
+                    <a href=//codemirror.net/>CodeMirror</a>,
+                    <a href=//jquery.com/>jQuery</a>,
+                    <a href=//d3js.org/>D3.js</a>, and
+                    <a href=//en.wikipedia.org/wiki/Sorting_algorithm>Wikipedia</a>.
+                </div>
+            </div>
+
+            <div class='block wide'>
+                <div class='blockHeader indent'>
+                    <h3>Comments and Feedback</h3>
+                </div>
+                <div class='clear blockContent indent grow'>
+                    {% include "comments.html" %}
+                </div>
+            </div>
+        </div>
+        <a href="https://plus.google.com/109468193166819923528" rel="publisher">Google+</a>
+
+        <script>
+            previewRunning = {}
+            previewEvents = {}
+            {% for _, _, _, events, id, _ in algorithms %}
+                previewEvents[{{id}}] = {{events}};
+                previewRunning[{{id}}] = false;
+            {% endfor %}
+
+            function render(id, n) {
+                if (n < previewEvents[id].length) {
+                    previewRunning[id] = true
+                    e = previewEvents[id][n]
+                    showRendering(e, '#preview'+id, 340, 240, 0.5);
+                    setTimeout(function() { render(id, n+1); }, 200)
+                }
+                else {
+                    previewRunning[id] = false
+                    setTimeout(function() {
+                        $('#marker').removeClass('shown').addClass('hidden')
+                        clearHoverHighlight()
+                    }, 5000)
+                }
+            }
+
+            function show(name) {
+                document.location = '/show?name=' + name
+            }
+
+            function clearHoverHighlight() {
+                $( ".block" ).each(function( index ) { 
+                    $(this).css({ border: "2px solid #777", background: "#EEE" }) 
+                });
+            }
+
+            function preview(id) {
+                var marker = $('#marker')
+                var preview = $('#preview'+id)
+                marker.removeClass('hidden').addClass('shown')
+                marker.css({ left: preview.offset().left+40, top: preview.offset().top-137 })
+                clearHoverHighlight()
+                preview.parent().parent().css({ 
+                    border: "2px solid orange", background: 'orange'
+                })
+                if (!previewRunning[id]) {
+                    setTimeout(function() { render(id, 0); }, 1)
+                }
+            }
+
+            function initPyAlgoViz() {
+                {% for _, _, _, _, id, _ in algorithms %}
+                    preview({{id}})
+                {% endfor %}
+                {% for _, _, _, _, id, _ in algorithms[:1] %}
+                    preview({{id}})
+                {% endfor %}
+            }
+
+            setTimeout(function() {
+                var element = document.createElement("script");
+                element.setAttribute("type","text/javascript")
+                element.setAttribute("src", "3rd.js")
+                document.body.appendChild(element);
+            }, 100)
+        </script>
+    </body>
+</html>

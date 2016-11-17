@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>PyAlgoViz - Logs</title>
+        <script>
+            function toggle(eid) {
+                var e = document.getElementById(eid);
+                e.style.height = "500px"
+                e.style.width = "800px"
+            }
+        </script>
+    </head>
+    <body style="background: white">
+        <h1>PyAlgoViz activity in the last {{days}} days </h1>
+        <a href=/log?days=1>day</a>
+        <a href=/log?days=7>week</a>
+        <a href=/log?days=30>month</a>
+        <a href=/log?days=365>year</a>
+        <a href=/log?days=10000>all</a>
+        <p>
+        <table border=0 cellpadding=3>
+            {% for n, date, what, msg in logs %}
+            <tr>
+                <td valign=top>{{date}}</td>
+                <td valign=top>{{what}}</td>
+                <td valign=top>
+                    <u style="cursor:pointer;" onclick='toggle("{{n}}")'>+</u>
+                    <div id="{{n}}" style="height:0px; width:0px; overflow:hidden;">
+                        <pre>
+{{msg}}
+                        </pre>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>

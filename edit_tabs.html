@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <style> {% include "3rd.css" %} </style>
+    <style> {% include "pyalgoviz.css" %} </style>
+    <style>
+        .CodeMirror pre { font-size: 25px; } 
+        .CodeMirror-linenumber { font-size: 25px; } 
+        .rendering { width:{{editor_width}}px; height:{{editor_height-100}}px; margin: 3px 0 0 0; } 
+        .speed { width: 125px; font-size: 110%; margin: 10px 7px 0px 1px; }
+        .slider { width: 145px; font-size: 100%; margin: 17px 5px 0px 0px; }
+        .progress {font-size: 100%; width:200px; margin: 19px 5px 0px 0px; }
+        .vizhead { padding:5px 0 0 10px; background: white; font-size: 22px; }
+        .viz { padding:3px; padding-top:0; background: white }
+        .tab_content { padding: 5px 20px 10px 20px; }
+    </style>
+    <title>PyAlgoViz - {{name}}</title>
+</head>
+<body>
+<div class="container">
+      <ul class="tabs">
+        <li><a href="#tab1">Algorithm</a></li>
+        <li><a href="#tab2">Script</a></li>
+        <li><a href="#tab3">Visualization</a></li>
+      </ul>
+      <div class="tab_container">
+        <div id="tab1" class="tab_content">
+            <textarea id="script" name="script">{{script}}</textarea>
+        </div>
+        <div id="tab2" class="tab_content">
+            <textarea id="visualization">{{viz}}</textarea>
+            <textarea id="output" style="visibility:hidden"></textarea>
+        </div>
+        <div id="tab3" class="tab_content">
+            <div class=vizhead>
+                This algorithm and visualization was contributed by: 
+                <a target=_blank href="https://www.google.com/#q={{author}}">{{author}}</a>
+            </div>
+            <div class=vizhead>
+                <table style="margin: 3px 0 0 -12px"><tr><td>
+                  <button onclick="doRunScript()" id="runButton" class='button'>Run</button>
+                </td><td>
+                  <button onclick="doPreviousStep()" id="previousButton" class='button'>&lt;</button>
+                </td><td>
+                  <select id="speed" class="speed">
+                  <option>Fast</option>
+                  <option selected>Medium</option>
+                  <option>Slow</option>
+                  <option>Snail</option>
+                  <option>Molasses</option>
+                  </select>
+                </td><td>
+                  <div id="slider" class='slider'></div>
+                </td><td>
+                  <div id="progress" class="progress moveup">Loading...</div>
+                </td><td>
+                  <button onclick="doNextStep()" id="nextButton" class='button'>&gt;</button>
+                </td><td>
+                  <button onclick="doStop()" id="stopButton" class='button'>Play</button>
+                </td></tr><tr><td colspan=7>
+                  <div id="rendering" class="rendering"></div>
+                </td></tr></table>
+            </div>
+        </div>
+  </div>
+</div>
+
+
+    {% include "3rd.html" %}
+
+    <script>
+        var runTimer = null;
+
+        vizEditor.on('change',  function(cm, change) {  
+            if (runTimer) clearTimeout(runTimer)
+            runTimer = setTimeout(doRunScript, 1000);
+        })
+
+        outputArea.setSize(0,0);
+
+        function showDemo(name, tabs) {
+            var url = "show?tabs=" + tabs + "&name=" + name;
+            var html = "<iframe width=1010 height=680 src=" + url + "></iframe><p>";
+            $("#demo_"+name).html(html)
+        }
+
+    </script>
+
+</body>
+</html>
+
