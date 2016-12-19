@@ -16,6 +16,12 @@ indexes:
   - name: author
   - name: date
 
+- kind: Visualization
+  ancestor: yes
+  properties:
+  - name: name
+  - name: part
+
 - kind: Algorithm
   ancestor: yes
   properties:

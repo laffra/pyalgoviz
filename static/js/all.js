@@ -1,6 +1,3 @@
-<script>
-    function initPyAlgoViz() { 
-    }
 // d3.min.js
 
 
@@ -7996,10 +7993,8 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
     { keys: ['<C-c>'], type: 'keyToKey', toKeys: ['<Esc>'] },
     { keys: ['s'], type: 'keyToKey', toKeys: ['c', 'l'] },
     { keys: ['S'], type: 'keyToKey', toKeys: ['c', 'c'] },
-    { keys: ['Y'], type: 'keyToKey', toKeys: ['y', 'y'] },
     { keys: ['<Home>'], type: 'keyToKey', toKeys: ['0'] },
     { keys: ['<End>'], type: 'keyToKey', toKeys: ['$'] },
-    { keys: ['<CR>'], type: 'keyToKey', toKeys: ['+'] },
     { keys: ['<PageUp>'], type: 'keyToKey', toKeys: ['<C-b>'] },
     { keys: ['<PageDown>'], type: 'keyToKey', toKeys: ['<C-f>'] },
     // Motions
@@ -8150,9 +8145,9 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
     { keys: ['D'], type: 'operatorMotion', operator: 'delete',
       motion: 'moveToEol', motionArgs: { inclusive: true },
         operatorMotionArgs: { visualLine: true }},
-    //{ keys: ['Y'], type: 'operatorMotion', operator: 'yank',
-        //motion: 'moveToEol', motionArgs: { inclusive: true },
-        //operatorMotionArgs: { visualLine: true }},
+    { keys: ['Y'], type: 'operatorMotion', operator: 'yank',
+        motion: 'moveToEol', motionArgs: { inclusive: true },
+        operatorMotionArgs: { visualLine: true }},
     { keys: ['C'], type: 'operatorMotion',
         operator: 'change',
         motion: 'moveToEol', motionArgs: { inclusive: true },
@@ -8934,14 +8929,12 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
           // Handle user defined Ex to Ex mappings
           exCommandDispatcher.processCommand(cm, command.exArgs.input);
         } else {
-          if (false) {
-              if (vim.visualMode) {
-                showPrompt(cm, { onClose: onPromptClose, prefix: ':', value: '\'<,\'>',
-                    onKeyDown: onPromptKeyDown});
-              } else {
-                showPrompt(cm, { onClose: onPromptClose, prefix: ':',
-                    onKeyDown: onPromptKeyDown});
-              }
+          if (vim.visualMode) {
+            showPrompt(cm, { onClose: onPromptClose, prefix: ':', value: '\'<,\'>',
+                onKeyDown: onPromptKeyDown});
+          } else {
+            showPrompt(cm, { onClose: onPromptClose, prefix: ':',
+                onKeyDown: onPromptKeyDown});
           }
         }
       },
@@ -36280,6 +36273,7 @@ $.widget( "ui.tooltip", {
 }( jQuery ) );
 
 
+/// PyAlgoViz
 
 var events = [];
 var currentEvent = 0;
@@ -36290,15 +36284,17 @@ var nameChanged = false
 var showVizErrors = false
 var OUTPUT = ''
 
-var audio = new webkitAudioContext();
-var gain = audio.createGain(); 
-gain.gain.value = 0; 
-var osc = audio.createOscillator()
-osc.type = 0;
-osc.frequency.value = 0;
-osc.start(0)
-osc.connect(gain);
-gain.connect(audio.destination);
+function initAudio() {
+    var audio = new webkitAudioContext();
+    var gain = audio.createGain();
+    gain.gain.value = 0;
+    var osc = audio.createOscillator()
+    osc.type = 0;
+    osc.frequency.value = 0;
+    osc.start(0)
+    osc.connect(gain);
+    gain.connect(audio.destination);
+}
 
 function B(freq, duration) {
     try {
@@ -36320,10 +36316,10 @@ function doRunScript() {
     outputArea.setValue('Running...');
     $('*').css('cursor','wait');
     $("#runButton").attr("disabled", "disabled");
-    $('#stopButton span').html('Stop');        
-    params = { 
-        name: $('#name').val(), 
-        script: scriptEditor.getValue(), 
+    $('#stopButton span').html('Stop');
+    params = {
+        name: $('#name').val(),
+        script: scriptEditor.getValue(),
         viz: vizEditor.getValue(),
         showVizErrors: showVizErrors
     }
@@ -36346,64 +36342,28 @@ function doRunScript() {
             scriptEditor.setSelection({line:error.lineno-1,ch:0}, {line:error.lineno,ch:0});
         }
         currentEvent = 0;
-        $('#stopButton span').html('Stop');        
+        $('#stopButton span').html('Stop');
         animate();
     }).header("Content-Type","application/x-www-form-urlencoded").send("POST",$.param(params));
 }
 
-function getUrlVars() {
-    var vars = {};
-    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,    
-    function(m,key,value) {
-      vars[key] = value;
-    });
-    return vars;
-}
-
-{% if not share %}
-    setInterval(function() {
-        if (dirty) {
-            doSave();
-        }
-    }, 3000);
-    name = '__temp__' + getUrlVars()['name'];
-    jQuery.get("/load?name=" + name, function(data) {
-        if (data['script']) {
-            scriptEditor.setValue(data['script']);
-        }
-        if (data['viz']) {
-            vizEditor.setValue(data['viz']);
-        }
-    });
-{% endif %}
-
 function doSave() {
-    if ($('#stopButton span').html() == 'Stop') {        
+    if ($('#stopButton span').html() == 'Stop') {
         doStop();
     }
     if (dirty) {
-        {% if share %}
-            name = $('#name').val();
-        {% else %}
-            name = '__temp__' + getUrlVars()['name'];
-        {% endif %}
+        name = $('#name').val()
         if (name.length) {
-            {% if share %}
-                $('*').css('cursor','wait');
-            {% endif %}
+            $('*').css('cursor','wait');
             $("#saveButton").attr("disabled", "disabled");
             params = { name: name, script: scriptEditor.getValue(), viz:vizEditor.getValue() }
-            console.log('saving editor contents for "' + name +'".');
             d3.json("/save", function(data) {
-                console.log('saved editor contents for "' + name +'".');
-                dirty = nameChanged = false
                 $('*').css('cursor','auto');
                 $("#saveButton").removeAttr("disabled");
+                outputArea.setValue(data['result']);
+                dirty = nameChanged = false
                 $('#saveButton').removeClass('shown').addClass('hidden')
-                {% if share %}
-                    outputArea.setValue(data['result']);
-                    window.location = '/show?name=' + name;
-                {% endif %}
+                window.location = '/show?name=' + name;
             }).header("Content-Type","application/x-www-form-urlencoded").send("POST",$.param(params));
         }
         else {
@@ -36436,9 +36396,7 @@ function doUpdate() {
 
 function doChange() {
     dirty = true
-    {% if share %}
-        $('#saveButton').removeClass('hidden').addClass('shown')
-    {% endif %}
+    $('#saveButton').removeClass('hidden').addClass('shown')
 }
 
 function doNameChange() {
@@ -36447,7 +36405,7 @@ function doNameChange() {
 }
 
 function doDelete() {
-    if ($('#stopButton span').html() == 'Stop') {        
+    if ($('#stopButton span').html() == 'Stop') {
         doStop();
     }
     if (confirm('Are you certain you want to delete this algorithm?\n' +
@@ -36460,7 +36418,7 @@ function doDelete() {
 }
 
 function doShare() {
-    if ($('#stopButton span').html() == 'Stop') {        
+    if ($('#stopButton span').html() == 'Stop') {
         doStop();
     }
     if (confirm('Are you certain you want to share this algorithm?\n' +
@@ -36497,7 +36455,7 @@ function animate() {
         setTimeout(arguments.callee, DELAY[speed])
     }
     else {
-        $('#stopButton span').html('Play');        
+        $('#stopButton span').html('Play');
     }
 }
 
@@ -36506,8 +36464,8 @@ function doToggleVimMode() {
 }
 
 function doStop() {
-    if ($('#stopButton span').html() == 'Play') {        
-        $('#stopButton span').html('Stop');        
+    if ($('#stopButton span').html() == 'Play') {
+        $('#stopButton span').html('Stop');
         if (currentEvent == events.length-1) {
             currentEvent = 0;
         }
@@ -36515,7 +36473,7 @@ function doStop() {
     }
     else {
         currentEvent = events.length - 1;
-        $('#stopButton span').html('Play');        
+        $('#stopButton span').html('Play');
         setTimeout(showEvent, 1);
     }
 }
@@ -36560,7 +36518,7 @@ function C(x,y,r,fill,border) {
 
 function A(x,y,r1,r2,start,end,color) {
     canvas.append('path')
-        .attr('d', 
+        .attr('d',
             d3.svg.arc()
                 .innerRadius(r1)
                 .outerRadius(r2)
@@ -36573,7 +36531,7 @@ function A(x,y,r1,r2,start,end,color) {
 
 
 function doVizHelp() {
-    if ($('#stopButton span').html() == 'Stop') {        
+    if ($('#stopButton span').html() == 'Stop') {
         doStop()
     }
     function showHelp() {
@@ -36581,8 +36539,8 @@ function doVizHelp() {
           "Python Algorithm Visualization Help\n" +
           "--------------------------------------------------------------\n\n" +
           "The visualization script in the bottom left visualizes the code in the top left while it runs. " +
-          "You can refer to all local variables used in the algorithm above. " + 
-          "If an undefined local or other error is reached, the visualization script stops. " + 
+          "You can refer to all local variables used in the algorithm above. " +
+          "If an undefined local or other error is reached, the visualization script stops. " +
           "Enable 'Show Errors' to show the errors causing the visualization script to stop. " +
           "\n" +
           "\nThe visualization script is executed once for each executed line in the algorithm. " +
@@ -36590,7 +36548,7 @@ function doVizHelp() {
           "a subset of your script to make the visualization act more like a breakpoint. " +
           "\nYou can include arbitrary Python code, including defining helper functions." +
           "\n" +
-          "\nAvailable values/primitives:" + 
+          "\nAvailable values/primitives:" +
           "\n * __lineno__" +
           "\n * beep(frequency, milliseconds)" +
           "\n * text(x, y, txt, size=13, font='Arial', color='black')" +
@@ -36606,12 +36564,7 @@ function doVizHelp() {
     setTimeout(showHelp, 1)
 }
 
-RENDERING_SCALE = 1.0
-
-EDITOR_WIDTH = {{editor_width}};
-EDITOR_HEIGHT = {{editor_height}};
-
-function showRendering(script, div, w, h) {
+function showRendering(script, div, w, h, scale) {
     if (script) {
         $(div).html('')
         svg = d3.select(div)
@@ -36619,7 +36572,7 @@ function showRendering(script, div, w, h) {
             .attr("width", w)
             .attr("height", h)
         canvas = svg.append('g')
-            .attr("transform", "scale("+RENDERING_SCALE+")");
+            .attr("transform", "scale("+scale+")");
 
         try {
             eval(script);
@@ -36633,12 +36586,11 @@ function showRendering(script, div, w, h) {
 }
 
 function showEvent() {
-    if ({{jstabs}}) { RENDERING_SCALE = 1.3; }
     e = events[currentEvent];
     scriptEditor.setSelection({line:e[0]-1,ch:0}, {line:e[0],ch:0});
-    showRendering(e[1], "#rendering", EDITOR_WIDTH, EDITOR_HEIGHT-5);
+    showRendering(e[1], "#rendering", 600, 445, 1.0);
     progress.innerText = 'Step ' + (currentEvent+1) + ' of ' + events.length
-    $('#slider').slider('value',currentEvent);        
+    $('#slider').slider('value',currentEvent);
     output = OUTPUT
     for (n=0; n<=currentEvent; n++) {
         output += events[n][2];
@@ -36668,12 +36620,12 @@ function editor(name, width, height, readonly) {
         "Ctrl-Enter": function(instance) { doRunScript(); },
         "F9": function(instance) { doRunScript(); }
     }
-    var features = readonly ? { 
+    var features = readonly ? {
         lineWrapping: true, extraKeys: keys
     } : {
         lineNumbers: true, indentUnit: 4, autofocus: true, indentWithTabs: false,
         enterMode: "keep", tabMode: "shift", showCursorWhenSelecting: true,
-        extraKeys: keys, 
+        extraKeys: keys,
         theme: "pastel-on-dark",
     }
     element = document.getElementById(name)
@@ -36683,7 +36635,6 @@ function editor(name, width, height, readonly) {
         if (!readonly) {
             editor.on('change',  function(cm, change) { setTimeout(doChange,500) })
         }
-        console.log('Create editor '+name+' '+width+' '+height)
         return editor
     }
 }
@@ -36694,25 +36645,15 @@ function setReadOnly(readOnly) {
 }
 
 function doToggleVimMode() {
-    if (scriptEditor) {
-        if ($('input[name=vim]').is(':checked')) {
-            scriptEditor.setOption('keyMap', 'vim');
-            vizEditor.setOption('keyMap', 'vim');
-            localStorage.setItem('keyMap', 'vim');
-        }
-        else {
-            scriptEditor.setOption('keyMap', 'default');
-            vizEditor.setOption('keyMap', 'default');
-            localStorage.setItem('keyMap', 'default');
-        }
-        scriptEditor.focus()
+    if ($('input[name=vim]').is(':checked')) {
+        scriptEditor.setOption('keyMap', 'vim');
+        vizEditor.setOption('keyMap', 'vim');
     }
-}
-
-function initVimMode() {
-    if (localStorage.getItem('keyMap') == 'vim') {
-        $('input[name=vim]').prop('checked', 'checked');
+    else {
+        scriptEditor.setOption('keyMap', 'default');
+        vizEditor.setOption('keyMap', 'default');
     }
+    scriptEditor.focus()
 }
 
 function doToggleShowErrors() {
@@ -36729,11 +36670,12 @@ try {
 } catch(e) {
 }
 
-scriptEditor = editor('script', {{editor_width}}, {{editor_height}}, false);
-vizEditor = editor('visualization', {{editor_width}}, {{editor_height}}, false);
-initVimMode();
-doToggleVimMode();
-outputArea = editor('output', {{editor_width}}, {{editor_height}}, true);
+scriptEditor = editor('script', 600, 450, false);
+vizEditor = editor('visualization', 600, 450, false);
+doToggleVimMode()
+outputArea = editor('output', 600, 450, true);
+
+setTimeout(initAudio, 1500);
 
 $("#slider").slider({value:0,max:0});
 $("#saveButton").button();
@@ -36748,29 +36690,9 @@ $("#stopButton").button();
 
 window.onbeforeunload = function () {
     if (dirty) {
-        {% if share %}
-            return "You have unsaved changes..."
-        {% endif %}
+        return "You have unsaved changes..."
     }
 }
-{% if share %}
 if (scriptEditor.getValue()) {
     doRunScript();
 }
-{% endif %}
-
-$(".tab_content").hide(); 
-$("ul.tabs li:first").addClass("active").show(); 
-$(".tab_content:first").show(); 
- 
-$("ul.tabs li").click(function() {
-    $("ul.tabs li").removeClass("active"); 
-    $(this).addClass("active"); 
-    $(".tab_content").hide(); 
-    var activeTab = $(this).find("a").attr("href"); 
-    $(activeTab).fadeIn(); 
-    return false;
-});
-
-</script>
-

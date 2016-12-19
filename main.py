@@ -25,7 +25,6 @@ from google.appengine.api import mail
 from google.appengine.api import users
 
 from models import Log
-from models import Comment
 from models import Algorithm
 
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -146,6 +145,12 @@ class TutorialDashboardHandler(webapp2.RequestHandler):
             self.response.write(template.render(locals()))
 
 
+class CloseHandler(webapp2.RequestHandler):
+    def get(self):
+        self.response.headers.add_header("Content-Type", "text/html")
+        self.response.write(JINJA_ENVIRONMENT.get_template('close.html').render(locals()))
+
+
 class ShowHandler(webapp2.RequestHandler):
     def loadScript(self, name, user=None):
         query = Algorithm.query(ancestor=ndb.Key('Python Algorithms', 'scrap')) \
@@ -162,24 +167,27 @@ class ShowHandler(webapp2.RequestHandler):
             logging.info('No algo found for '+name)
             return name, "# Cannot find: '"+name+"'", "", user
 
+
     def get(self):
         edit = self.request.get('edit') == 'true'
-        share = self.request.get('share', 'true') == 'true'
-        print '####', share
         tabs = self.request.get('tabs') == 'true'
+        delay = self.request.get('delay') or '1'
+        visualize = self.request.get('visualize') == 'true'
         script = urllib.unquote(self.request.get('script') or '')
         viz = urllib.unquote(self.request.get('viz') or '')
         name = self.request.get('name')
+        url = 'https://pyalgoviz.appspot.com/show?name=%s' % name
         user = users.get_current_user()
         author = user
-        if user:
+        if user or visualize:
             logout = users.create_logout_url("/")
             if name and not script and not viz:
                 _, script, viz, author = self.loadScript(name, user)
             editor_width = 1150 if tabs else 600
             editor_height = 640 if tabs else 450
             jstabs = "true" if tabs else "false"
-            template = JINJA_ENVIRONMENT.get_template('edit_tabs.html' if tabs else 'edit.html')
+            html = 'edit_tabs.html' if tabs else 'visualize.html' if visualize else 'edit.html'
+            template = JINJA_ENVIRONMENT.get_template(html)
             html = template.render(locals())
             self.response.write(html)
             self.response.headers.add_header("Content-Type", "text/html")
@@ -187,6 +195,8 @@ class ShowHandler(webapp2.RequestHandler):
         else:
             template = JINJA_ENVIRONMENT.get_template('login.html')
             next = '/show?edit=%s&name=%s' % (edit, name)
+            if visualize:
+                next = '/close'
             login = users.create_login_url(next)
             self.response.write(template.render(locals()))
             self.response.headers.add_header("Content-Type", "text/html")
@@ -207,23 +217,28 @@ class LinkHandler(ShowHandler):
 
 class RunHandler(webapp2.RequestHandler):
     def post(self):
+        name = self.request.get('name')
+        script = self.request.get('script')
+        viz = self.request.get('viz')
+        if script == 'none':
+            algo = Algorithm.query(ancestor=ndb.Key('Python Algorithms', 'scrap')) \
+                .filter(Algorithm.name == name) \
+                .filter(Algorithm.public == True) \
+                .order(-Algorithm.date).get()
+            if algo:
+                script = algo.script
+                viz = algo.viz
+        result = Executor(
+            script, viz,
+            self.request.get('showVizErrors') == 'true',
+        )
         author = users.get_current_user()
-        if author:
-            result = Executor(
-                self.request.get('script'), 
-                self.request.get('viz'), 
-                self.request.get('showVizErrors') == 'true',
-            )
-            info('User %s ran "%s":\n%s' % (
-                author.email(), 
-                self.request.get('name'), 
-                self.request.get('script'), 
-            ))
-            self.response.content_type = 'application/json'
-            self.response.write(json.encode({
-                'error': result.error,
-                'events': result.events,
-            }))
+        info('Ran %s "%s":\n%s' % (author, name, script))
+        self.response.write(json.encode({
+            'error': result.error,
+            'events': result.events,
+        }))
+
 
 def loadfile(name):
     path = os.path.join(os.path.split(__file__)[0], name)
@@ -240,8 +255,8 @@ class SourceHandler(webapp2.RequestHandler):
                 for n in [
                     'main.py', 'models.py', 
                     'index.html', 'edit.html', 'source.html',
-                    '3rd.css', 'pyalgoviz.css',
-                    'pyalgoviz.js', 
+                    'all.css', 'pyalgoviz.css',
+                    'all.html',
                 ]
             ]
             source = loadfile(name)
@@ -448,10 +463,10 @@ img { margin-top:25px; margin-bottom: 25px; }
 .person img { margin: 0; }
 ''' % (DEMO_WIDTH, DEDICATION_WIDTH, JOKE_WIDTH)
 
-DEMO_HTML_HEADER = "<html><head><style>" + loadfile("3rd.css") + "</style>" + \
+DEMO_HTML_HEADER = "<html><head><style>" + loadfile("all.css") + "</style>" + \
     "<style>%s</style></head><body><div id=main>" % DEMO_HTML_CSS
 
-DEMO_HTML_FOOTER = loadfile("3rd.html") + "</div></body></html>"
+DEMO_HTML_FOOTER = loadfile("all.html") + "</div></body></html>"
 
 FRAME_WIDTH = 1920 if HD else 1200
 FRAME_HEIGHT = 975 if HD else 700
@@ -722,7 +737,7 @@ TUTORIAL_HTML_CSS    = '''
     a { color: #777; }
 '''
 
-TUTORIAL_HTML_HEADER = "<html><head><style>" + loadfile("3rd.css") + "</style>" + \
+TUTORIAL_HTML_HEADER = "<html><head><style>" + loadfile("all.css") + "</style>" + \
     "<style>%s</style></head><body><div id=main>" % TUTORIAL_HTML_CSS
 
 
@@ -2553,7 +2568,7 @@ class TutorialHandler(ShowHandler):
             ]),
 
             TUTORIAL_SCRIPT,
-            JINJA_ENVIRONMENT.get_template('3rd.html').render({
+            JINJA_ENVIRONMENT.get_template('all.html').render({
                 'editor_width':800, 
                 'name': self.request.get('name'),
                 'editor_height':800,
@@ -2592,8 +2607,7 @@ class ShareHandler(webapp2.RequestHandler):
             if result.events:
                 step = max(1,len(result.events)/10)
                 events = result.events[2::step] + [result.events[-1]]
-                events = [viz for lineno,viz,output in events]
-                algo.events = str(events)
+                algo.events = str([viz for _,viz,_ in events])
                 algo.put()
                 msg += '\nAdded %d preview events' % len(events)
             else:
@@ -2602,7 +2616,8 @@ class ShareHandler(webapp2.RequestHandler):
             notify(author, 'share', algo.name, algo.script, algo.viz)
             self.response.write(json.encode({ 'result': msg }))
         except Exception as e:
-            msg = 'Cannot publish "%s": %s' % (name,e)
+            msg = 'Cannot share "%s": %s' % (
+                name,e)
             error(msg)
             self.response.write(json.encode({ 'result': msg }))
 
@@ -2895,6 +2910,7 @@ application = webapp2.WSGIApplication([
     ('/oscon',  TutorialHandler),
     ('/oscon-dashboard', TutorialDashboardHandler),
     ('/save',   SaveHandler),
+    ('/close',  CloseHandler),
     ('/load',   LoadHandler),
     ('/delete', DeleteHandler),
     ('/share',  ShareHandler),

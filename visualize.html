@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <style> {% include "all.css" %} </style>
+    <style>
+        .CodeMirror pre { font-size: 25px; } 
+        .CodeMirror-linenumber { font-size: 25px; } 
+        .rendering { width:635px; height:425px; margin: 3px 0 0 0; }
+        .speed { width: 125px; font-size: 110%; margin: 10px 7px 0px 1px; }
+        .slider { width: 145px; font-size: 100%; margin: 17px 5px 0px 0px; }
+        .progress {font-size: 100%; width:200px; margin: 19px -30px 0px 40px; }
+        .vizhead { padding:5px 0 0 10px; background: white; font-size: 22px; }
+        .viz { padding:3px; padding-top:0; background: white }
+        .tab_content { padding: 5px 20px 10px 20px; }
+        .hidden { position: absolute; display: none; }
+        .overlay { position: absolute; top: 11px; left: 16px; font-size: 12px; }
+        .smaller { font-size: 16px; }
+        .moveupmore { top: -8px; }
+        body, html { overflow: hidden; }
+    </style>
+    <title>PyAlgoViz - {{name}}</title>
+</head>
+<body>
+    <div>
+        <input id='name' class='hidden' value='{{name}}'>
+        <div class="hidden">
+            <textarea id="script" name="script">none</textarea>
+        </div>
+        <div class="hidden">
+            <textarea id="visualization">none</textarea>
+            <textarea id="output" style="visibility:hidden">none</textarea>
+        </div>
+        <div class=vizhead>
+            <table style="display:none; margin: 3px 0 0 -2px">
+                <tr>
+                    <td>
+                      <button onclick="doPreviousStep()" id="previousButton" class='button smaller'>&lt;</button>
+                    </td><td>
+                        &nbsp;&nbsp;
+                        &nbsp;&nbsp;
+                    </td><td>
+                      <div id="slider" class='slider'></div>
+                    </td><td>
+                      &nbsp;&nbsp;
+                    </td><td>
+                      <div id="progress" class="progress moveup smaller">Loading...</div>
+                    </td><td>
+                      <button onclick="doNextStep()" id="nextButton" class='button smaller'>&gt;</button>
+                    </td><td>
+                      <button onclick="doStop()" id="stopButton" class='button smaller'>Play</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan=7>
+                    </td>
+                </tr>
+            </table>
+            <div id="rendering" class="rendering"></div>
+            <div class="overlay">
+                <a target="_blank" href="{{url}}">open in PyAlgoViz...</a>
+                &nbsp;&nbsp;
+                <a href="javascript:document.location.reload()">reload</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "all.html" %}
+<script>
+</script>
+
+</body>
+</html>
+

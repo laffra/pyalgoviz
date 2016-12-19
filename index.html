@@ -5,7 +5,7 @@
         <meta name=”mobile-web-app-capable” content=”yes”>
         <meta name="description" content="Repository of Computer Science algorithms, written in Python, with visualizations written in Python as well. The animations run in the browser, and algorithms can be developed, saved, and shared from the browser. Example animations are: Dynamic Programming: Knapsack, Geometry - Pi Archimedes, Graphs - Dijkstra Shortest Path, Numbers - Fibonacci / Golden Ratio, Fibonacci Series Generator, Prime Number Generator, Searching - BFS - Breath First Search, Searching - Binary Search, DFS - Depth First Search, Searching - Linear Search, Sorting - Bogo Sort, Sorting - BubbleSort, Sorting - Cocktail Sort, Sorting - Comb Sort, Sorting - Gnome Sort, Sorting - Heap Sort, Unordered List of Tasks Temporary Binary Min-Heap Sorting - Insertion Sort, Sorting - MergeSort, Sorting - NegPos Sort, Sorting - Odd-Even Sort, Sorting - QuickSort, Sorting - QuickSort Sedgewick, Sorting - QuickSort Stackless, Sorting - ShellSort, Sorting - TimSort, Sorting - TreeSort, Sorting - Using Custom Keys, Strings - Anagram Check, Strings - Palindrome Check, Strings - Permutations, Strings - Prefix/Spell Tree, Strings - Spell/Correct, Trees - AVL, Trees - BST Creation, Trees - BST Merging, Trees - Diameter, Trees - Move To Root, Trees - Prefix/Radix/Trie, Trigonometry - Sin/Cos/Tan, This app was created by Chris Laffra.  Technologies used: Google App Engine, Python 2.7, Python NBD DataStore, Jinja2 Templates, HTML/JavaScript/CSS, CodeMirror, jQuery, D3.js, and Wikipedia."></meta>
         <style>{% include "pyalgoviz.css" %}</style>
-        <style>{% include "3rd.css" %}</style>
+        <style>{% include "all.css" %}</style>
         <title>PyAlgoViz - Home</title>
     </head>
     <body>
@@ -157,7 +157,7 @@
             setTimeout(function() {
                 var element = document.createElement("script");
                 element.setAttribute("type","text/javascript")
-                element.setAttribute("src", "3rd.js")
+                element.setAttribute("src", "all.js")
                 document.body.appendChild(element);
             }, 100)
         </script>

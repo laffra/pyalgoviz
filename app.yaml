@@ -1,8 +1,6 @@
-application: pyalgoviz
-version: 1
 runtime: python27
 api_version: 1
-threadsafe: true
+threadsafe: false
 
 handlers:
 - url: /icon-home.png
@@ -41,18 +39,6 @@ handlers:
   static_files: static/html/privacy.html
   upload: static/html/privacy.html
 
-- url: /pyalgoviz.js
-  static_files: static/js/pyalgoviz.js
-  upload: static/js/pyalgoviz.js
-
-- url: /3rd.js
-  static_files: static/js/3rd.js
-  upload: static/js/3rd.js
-
-- url: /responsive-elements.js
-  static_files: static/js/responsive-elements.js
-  upload: static/js/responsive-elements.js
-
 - url: /user
   script: main.application
   login: required
@@ -74,7 +60,10 @@ handlers:
 
 - url: /run
   script: main.application
-  login: required
+
+- url: /all.js
+  static_files: static/js/all.js
+  upload: static/js/all.js
 
 - url: /.*
   script: main.application

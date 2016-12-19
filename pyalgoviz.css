@@ -124,6 +124,10 @@ td {
     width: 320px;
 }
 
+.green {
+    color: darkgreen;
+}
+
 .red {
     color: red;
 }

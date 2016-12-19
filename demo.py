@@ -176,8 +176,8 @@ class SourceHandler(webapp2.RequestHandler):
                 for n in [
                     'main.py', 'models.py', 
                     'index.html', 'edit.html', 'source.html',
-                    '3rd.css', 'pyalgoviz.css',
-                    'pyalgoviz.js', 
+                    'all.css', 'pyalgoviz.css',
+                    'all.html',
                 ]
             ]
             source = loadfile(name)
@@ -350,10 +350,10 @@ img { margin-top:25px; margin-bottom: 25px; }
 .person img { margin: 0; }
 ''' % (DEMO_WIDTH, DEDICATION_WIDTH, JOKE_WIDTH)
 
-DEMO_HTML_HEADER = "<html><head><style>" + loadfile("3rd.css") + "</style>" + \
+DEMO_HTML_HEADER = "<html><head><style>" + loadfile("all.css") + "</style>" + \
     "<style>%s</style></head><body><div id=main>" % DEMO_HTML_CSS
 
-DEMO_HTML_FOOTER = loadfile("3rd.html") + "</div></body></html>"
+DEMO_HTML_FOOTER = loadfile("all.html") + "</div></body></html>"
 
 FRAME_WIDTH = 1920 if HD else 1200
 FRAME_HEIGHT = 975 if HD else 700
